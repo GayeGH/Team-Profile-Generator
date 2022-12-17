@@ -3,8 +3,11 @@ const Employee = require('./lib/Employee');
 const Manager = require('./lib/Manager');
 const Intern = require('./lib/Intern');
 const Engineer = require('./lib/Engineer');
+const fs = require('fs');
+const { table } = require('console');
 
-const MemberArr = [];
+const memberArr = [];
+const cardArr = [];
 function init() {
    inquirer 
     .prompt([
@@ -33,10 +36,7 @@ function init() {
 
         }
 
-        //const employee = new Employee(response.manager, response.intern, response.engineer);
-        //MemberArr.push(employee);
-        //console.log(memberArr);
-    });
+     });
 };
     function createManager() {
         inquirer
@@ -65,7 +65,7 @@ function init() {
         ])
         .then((response) => {
             const manager = new Manager(response.name, response.id, response.email, response.officenumber);
-            MemberArr.push(manager);
+            memberArr.push(manager);
             init();
 
         })
@@ -99,7 +99,7 @@ function init() {
         ])
         .then((response) => {
             const intern = new Intern(response.name, response.id, response.email, response.school);
-            MemberArr.push(intern);
+            memberArr.push(intern);
             init();
         })
         
@@ -132,13 +132,78 @@ function init() {
         ])
         .then((response) => {
             const engineer = new Engineer(response.name, response.id, response.email, response.github);
-            MemberArr.push(engineer);
+            memberArr.push(engineer);
             init();
         })
         
     };
 
     function generateTable(){
-         console.log (MemberArr);
+        convertToHTML(memberArr);
     };
+    
     init();
+
+    function convertToHTML(memberArr) {
+        const generateHTML = (table)  =>
+            `<!DOCTYPE html>
+              <html lang="en">
+                 <head>
+                   <meta charset="UTF-8">
+                   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+                   <title>Table</title>
+                </head>
+                <body>
+                    <main class="p-5 mb-4 header bg-light">
+                    <div class="container">
+                            ${table}
+                    </div>
+                </main>
+              </body>
+         </html>`;
+         
+    
+        memberArr.forEach(member => {
+            switch (member.getType()) {
+                case 'Manager':
+                    cardArr.push( `<div class="card" style="width: 18rem;">
+                         <h1 class="card-img-top">Name: ${member.name}</h1>
+                         <div class="card-body">
+                            <h5 class="card-title">Id: ${member.id}</h5>
+                            <p class="card-text">Email: ${member.email}</p>
+                            <p class="btn btn-primary">Officenumber: ${member.getOfficenumber()}</p>
+                        </div>
+                     </div>`);
+                    
+                break;
+                case 'Intern':
+                    cardArr.push( `<div class="card" style="width: 18rem;">
+                         <h1 class="card-img-top">Name: ${member.name}</h1>
+                         <div class="card-body">
+                            <h5 class="card-title">ID: ${member.id}</h5>
+                            <p class="card-text">Email: ${member.email}</p>
+                            <p class="btn btn-primary">School: ${member.getSchool()}</p>
+                        </div>
+                     </div>`);
+                break;
+                case 'Engineer':
+                    cardArr.push( `<div class="card" style="width: 18rem;">
+                         <h1 class="card-img-top">Name: ${member.name}</h1>
+                         <div class="card-body">
+                            <h5 class="card-title">ID: ${member.id}</h5>
+                            <p class="card-text">Email: ${member.email}</p>
+                            <p class="btn btn-primary">Github: ${member.getGithub()}</p>
+                        </div>
+                     </div>`);
+                break;
+        }
+
+        var finalTemplate = generateHTML(cardArr.toString());
+
+        fs.writeFile('table.html', finalTemplate,(err)  =>
+             err ? console.log (err) : console.log('Successfully created table.html!')
+        );
+
+    });
+}
